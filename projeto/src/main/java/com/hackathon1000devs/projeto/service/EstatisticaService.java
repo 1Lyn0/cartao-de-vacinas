@@ -1,6 +1,5 @@
 package com.hackathon1000devs.projeto.service;
 
-import com.hackathon1000devs.projeto.model.DoseModel;
 import com.hackathon1000devs.projeto.model.PacienteModel;
 import com.hackathon1000devs.projeto.repository.DoseRepository;
 import com.hackathon1000devs.projeto.repository.ImunizacaoRepository;
@@ -10,68 +9,45 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class EstatisticaService {
 
     @Autowired
-    private ImunizacaoRepository imuRepo;
-
-    @Autowired
-    private PacienteRepository pacRepo;
+    private PacienteRepository pacienteRepo;
 
     @Autowired
     private DoseRepository doseRepo;
 
-    // Método auxiliar para calcular idade em meses
-    public long calcularIdadeMeses(LocalDate nascimento) {
-        if (nascimento == null) return 0;
-        return ChronoUnit.MONTHS.between(nascimento, LocalDate.now());
-    }
+    @Autowired
+    private ImunizacaoRepository imunizacaoRepo;
 
-    // Lógica para Vacinas Atrasadas
-    public long getVacinasAtrasadas(Long pacienteId) {
-        PacienteModel p = pacRepo.findById(pacienteId)
+    public long calcularVacinasAtrasadas(Long pacienteId) {
+        PacienteModel paciente = pacienteRepo.findById(pacienteId)
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
 
-        long idadeAtualMeses = calcularIdadeMeses(p.getData_nascimento());
+        // Calcula a idade total em meses (ex: 2 anos e 3 meses = 27 meses)
+        long idadeEmMeses = ChronoUnit.MONTHS.between(paciente.getData_nascimento(), LocalDate.now());
 
-        // 1. Pegar todas as doses que existem no sistema
-        List<DoseModel> todasAsDoses = doseRepo.findAll();
+        // Doses que o calendário recomenda até a idade atual dele
+        long dosesDeveriaTerTomado = doseRepo.countByIdadeRecomendadaAté(idadeEmMeses);
 
-        // 2. Filtrar as que o paciente já tomou
-        List<Long> idsDosesTomadas = imuRepo.findByPacienteId(pacienteId).stream()
-                .map(imu -> imu.getDose().getId_dose())
-                .collect(Collectors.toList());
+        // Doses que ele realmente registrou no sistema
+        long dosesTomadas = imunizacaoRepo.countByPacienteId(pacienteId);
 
-        // 3. Contar as que ele deveria ter tomado (idade recomendada <= idade atual)
-        // e que NÃO estão na lista de tomadas
-        return todasAsDoses.stream()
-                .filter(d -> d.getIdade_recomendada_aplicacao() <= idadeAtualMeses)
-                .filter(d -> !idsDosesTomadas.contains(d.getId_dose()))
-                .count();
+        // Atrasadas = Recomendadas - Aplicadas
+        long atrasadas = dosesDeveriaTerTomado - dosesTomadas;
+
+        return Math.max(0, atrasadas); // Retorna 0 se ele estiver em dia ou adiantado
     }
 
-    // Lógica para Vacinas no Próximo Mês
-    public long getVacinasProximoMes(Long pacienteId) {
-        PacienteModel p = pacRepo.findById(pacienteId)
+    public long calcularProximasVacinas(Long pacienteId) {
+        PacienteModel paciente = pacienteRepo.findById(pacienteId)
                 .orElseThrow(() -> new RuntimeException("Paciente não encontrado"));
 
-        long idadeProximoMes = calcularIdadeMeses(p.getData_nascimento()) + 1;
+        long idadeEmMeses = ChronoUnit.MONTHS.between(paciente.getData_nascimento(), LocalDate.now());
 
-        // Doses recomendadas exatamente para a idade do mês que vem
-        List<DoseModel> dosesMesQueVem = doseRepo.findByIdadeRecomendada((int) idadeProximoMes);
-
-        // Filtra as que ele já tomou
-        List<Long> idsDosesTomadas = imuRepo.findByPacienteId(pacienteId).stream()
-                .map(imu -> imu.getDose().getId_dose())
-                .collect(Collectors.toList());
-
-        return dosesMesQueVem.stream()
-                .filter(d -> !idsDosesTomadas.contains(d.getId_dose()))
-                .count();
+        // Busca doses recomendadas para o mês que vem (Idade Atual + 1)
+        return doseRepo.countByIdadeRecomendadaExata(idadeEmMeses + 1);
     }
 }
-
