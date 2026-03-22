@@ -1,0 +1,105 @@
+{
+  "client": "Thunder Client",
+  "collectionName": "API - Cartão de Vacinas",
+  "dateExported": "2026-03-22",
+  "folders": [
+    {
+      "name": "Vacinas",
+      "requests": [
+        {
+          "name": "Listar Todas",
+          "method": "GET",
+          "url": "http://localhost:8080/vacinas/consultar"
+        },
+        {
+          "name": "Consultar por Faixa Etária",
+          "method": "GET",
+          "url": "http://localhost:8080/vacinas/consultar/faixa_etaria/ADULTO"
+        },
+        {
+          "name": "Consultar Vacinas Acima de X Meses",
+          "method": "GET",
+          "url": "http://localhost:8080/vacinas/consultar/idade_maior/12"
+        }
+      ]
+    },
+    {
+      "name": "Pacientes",
+      "requests": [
+        {
+          "name": "Excluir Paciente",
+          "method": "DELETE",
+          "url": "http://localhost:8080/paciente/excluir/1"
+        }
+      ]
+    },
+    {
+      "name": "Imunizações",
+      "requests": [
+        {
+          "name": "Inserir Imunização",
+          "method": "POST",
+          "url": "http://localhost:8080/imunizacao/inserir",
+          "body": {
+            "type": "json",
+            "raw": "{\n  \"fabricante\": \"Pfizer\",\n  \"lote\": \"ABC123\",\n  \"local_aplicacao\": \"UBS Central\",\n  \"profissional_aplicador\": \"Maria Silva\",\n  \"data_aplicacao\": \"2024-01-10\"\n}"
+          }
+        },
+        {
+            "name": "Alterar Imunização",
+            "method": "PUT",
+            "url": "http://localhost:8080/imunizacao/alterar/1",
+            "body": {
+            "type": "json",
+            "raw": "{\n  \"fabricante\": \"Butantan\",\n  \"lote\": \"XYZ900\",\n  \"local_aplicacao\": \"Hospital Municipal\",\n  \"profissional_aplicador\": \"João Souza\",\n  \"data_aplicacao\": \"2024-02-01\"\n}"
+            }
+        },
+        {
+            "name": "Excluir Imunização por ID",
+            "method": "DELETE",
+            "url": "http://localhost:8080/imunizacao/excluir/1"
+        },
+        {
+            "name": "Excluir Todas Imunizações de Paciente",
+            "method": "DELETE",
+            "url": "http://localhost:8080/imunizacao/excluir/paciente/1"
+        },
+        {
+            "name": "Consultar Imunizações por Paciente",
+            "method": "GET",
+            "url": "http://localhost:8080/imunizacao/consultar/paciente/1"
+        },
+        {
+            "name": "Consultar por Período",
+            "method": "GET",
+            "url": "http://localhost:8080/imunizacao/consultar/paciente/1/aplicacao/2024-01-01/2024-12-31"
+        }
+    ]
+    },
+    {
+        "name": "Estatísticas",
+      "requests": [
+        {
+            "name": "Total de Imunizações",
+          "method": "GET",
+          "url": "http://localhost:8080/estatisticas/imunizacoes/paciente/1"
+        },
+        {
+          "name": "Imunizações Atrasadas",
+          "method": "GET",
+          "url": "http://localhost:8080/estatisticas/imunizacoes_atrasadas/paciente/1"
+        },
+        {
+          "name": "Próximas Imunizações",
+          "method": "GET",
+          "url": "http://localhost:8080/estatisticas/proximas_imunizacoes/paciente/1"
+        },
+        {
+          "name": "Vacinas Acima de Meses",
+          "method": "GET",
+          "url": "http://localhost:8080/estatisticas/imunizacoes/idade_maior/12"
+        }
+      ]
+    }
+  ]
+}
